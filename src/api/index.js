@@ -25,10 +25,43 @@ export const login = query => {
     });
 };
 
-export const queryBrandList = query => {
+// export const queryBrandList = query => {
+//     return request({
+//         url: '/api/admin/brand',
+//         method: 'get',
+//         params: query
+//     });
+// };
+
+export const queryCategoryList = query => {
     return request({
-        url: '/api/admin/brand',
+        url: '/api/admin/category',
         method: 'get',
         params: query
+    });
+};
+
+
+export const queryGoodsList = query => {
+    return request({
+        url: '/api/admin/goods',
+        method: 'get',
+        params: query
+    });
+};
+
+export const queryGoodsInfo = query => {
+    return request({
+        url: '/api/admin/goods/info',
+        method: 'get',
+        params: query
+    });
+};
+
+export const deleteGoods = query => {
+    return request({
+        url: '/api/admin/goods/destory',
+        method: 'post',
+        data: query
     });
 };

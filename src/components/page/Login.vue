@@ -50,7 +50,7 @@ export default {
                     const response = await login(this.param);
                     if(!response) return this.$message.error(errmsg);
 
-                    const {data: {token} } = response;
+                    const {token} = response;
                     this.$message.success('登录成功');
                     saveUserInfo(token);
                     this.$router.push('/');

@@ -15,11 +15,15 @@
                     class="handle-del mr10"
                     @click="delAllSelection"
                 >批量删除</el-button>
-                <el-select v-model="query.address" placeholder="地址" class="handle-select mr10">
+                <el-input v-model="query.name" placeholder="商品名称" class="handle-input mr10"></el-input>
+                <el-select v-model="query.address" placeholder="商品分类" class="handle-select mr10">
                     <el-option key="1" label="广东省" value="广东省"></el-option>
                     <el-option key="2" label="湖南省" value="湖南省"></el-option>
                 </el-select>
-                <el-input v-model="query.name" placeholder="用户名" class="handle-input mr10"></el-input>
+                <el-select v-model="query.address" placeholder="上架状态" class="handle-select mr10">
+                    <el-option key="1" label="广东省" value="广东省"></el-option>
+                    <el-option key="2" label="湖南省" value="湖南省"></el-option>
+                </el-select>
                 <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
             </div>
             <el-table
@@ -31,30 +35,74 @@
                 @selection-change="handleSelectionChange"
             >
                 <el-table-column type="selection" width="55" align="center"></el-table-column>
-                <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
-                <el-table-column prop="name" label="用户名"></el-table-column>
-                <el-table-column label="账户余额">
-                    <template slot-scope="scope">￥{{scope.row.money}}</template>
-                </el-table-column>
-                <el-table-column label="头像(查看大图)" align="center">
+                <!-- <el-table-column type="index" label="编号" width="55" align="center"></el-table-column> -->
+                <el-table-column label="商品图片" align="center">
                     <template slot-scope="scope">
                         <el-image
                             class="table-td-thumb"
-                            :src="scope.row.thumb"
-                            :preview-src-list="[scope.row.thumb]"
+                            :src="scope.row.primary_pic_url"
+                            :preview-src-list="[scope.row.primary_pic_url]"
                         ></el-image>
                     </template>
                 </el-table-column>
-                <el-table-column prop="address" label="地址"></el-table-column>
-                <el-table-column label="状态" align="center">
+                <el-table-column prop="name" label="商品名称" align="center"></el-table-column>
+                <el-table-column label="价格" align="center">
+                    <template slot-scope="scope">￥{{scope.row.retail_price}}</template>
+                </el-table-column>
+                <el-table-column label="标签" width="180" align="center">
+                    <template slot-scope="scope">
+                        <el-row>
+                            <el-col :span="8">上架</el-col>
+                            <el-col :span="16">
+                                <el-switch
+                                    v-model="scope.row.is_on_sale"
+                                    active-color="#00A854"
+                                    :active-value=1
+                                    inactive-color=""
+                                    :inactive-value=0
+                                    @change="changeSwitch(scope.row)">
+                                </el-switch>
+                            </el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="8">新品</el-col>
+                            <el-col :span="16">
+                                <el-switch
+                                    v-model="scope.row.is_new"
+                                    active-color="#00A854"
+                                    :active-value=1
+                                    inactive-color=""
+                                    :inactive-value=0
+                                    @change="changeSwitch(scope.row)">
+                                </el-switch>
+                            </el-col>
+                        </el-row>
+                       <el-row>
+                            <el-col :span="8">热销</el-col>
+                            <el-col :span="16">
+                                <el-switch
+                                    v-model="scope.row.is_hot"
+                                    active-color="#00A854"
+                                    :active-value=1
+                                    inactive-color=""
+                                    :inactive-value=0
+                                    @change="changeSwitch(scope.row)">
+                                </el-switch>
+                            </el-col>
+                        </el-row>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="goods_number" label="库存" align="center"></el-table-column>
+                <el-table-column prop="sell_volume" label="销量" align="center"></el-table-column>
+                <!-- <el-table-column label="状态" align="center">
                     <template slot-scope="scope">
                         <el-tag
                             :type="scope.row.state==='成功'?'success':(scope.row.state==='失败'?'danger':'')"
                         >{{scope.row.state}}</el-tag>
                     </template>
-                </el-table-column>
+                </el-table-column> -->
 
-                <el-table-column prop="date" label="注册时间"></el-table-column>
+                <!-- <el-table-column prop="date" label="注册时间"></el-table-column> -->
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-button
@@ -75,8 +123,8 @@
                 <el-pagination
                     background
                     layout="total, prev, pager, next"
-                    :current-page="query.pageIndex"
-                    :page-size="query.pageSize"
+                    :current-page="query.page"
+                    :page-size="query.size"
                     :total="pageTotal"
                     @current-change="handlePageChange"
                 ></el-pagination>
@@ -84,14 +132,32 @@
         </div>
 
         <!-- 编辑弹出框 -->
-        <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
+        <el-dialog title="编辑商品信息" :visible.sync="editVisible" width="30%">
             <el-form ref="form" :model="form" label-width="70px">
-                <el-form-item label="用户名">
+                <el-form-item label="商品名称">
                     <el-input v-model="form.name"></el-input>
                 </el-form-item>
-                <el-form-item label="地址">
-                    <el-input v-model="form.address"></el-input>
+                <el-form-item label="商品分类">
+                    <el-input v-model="form.category_id"></el-input>
                 </el-form-item>
+                <el-form-item label="价格">
+                    <el-input v-model="form.retail_price"></el-input>
+                </el-form-item>
+                <el-form-item label="库存">
+                    <el-input v-model="form.goods_number"></el-input>
+                </el-form-item>
+                <el-form-item label="销量">
+                    <el-input v-model="form.sell_volume"></el-input>
+                </el-form-item>
+                <el-form-item label="商品参数">
+                    <el-input v-model="form.goods_desc"></el-input>
+                </el-form-item>
+                <el-form-item label="商品图片">
+                    <el-input v-model="form.goods_desc"></el-input>
+                </el-form-item>  
+                <el-form-item label="商品详情">
+                    <el-input v-model="form.goods_desc"></el-input>
+                </el-form-item>              
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="editVisible = false">取 消</el-button>
@@ -102,7 +168,7 @@
 </template>
 
 <script>
-import { fetchData, queryBrandList } from 'api/index';
+import { fetchData, queryGoodsList, queryCategoryList, deleteGoods, queryGoodsInfo } from 'api/index';
 export default {
     name: 'basetable',
     data() {
@@ -110,8 +176,8 @@ export default {
             query: {
                 address: '',
                 name: '',
-                pageIndex: 1,
-                pageSize: 10
+                page: 1,
+                size: 10
             },
             tableData: [],
             multipleSelection: [],
@@ -128,17 +194,22 @@ export default {
     },
     methods: {
         // 获取 easy-mock 的模拟数据
-        getData() {
-            fetchData(this.query).then(res => {
-                console.log(res);
-                this.tableData = res.list;
-                this.pageTotal = res.pageTotal || 50;
-            });
-            queryBrandList()
+        async getData() {
+            // fetchData(this.query).then(res => {
+            //     console.log(res);
+            //     this.tableData = res.list;
+            //     this.pageTotal = res.pageTotal || 50;
+            // });
+            const response = await queryGoodsList(this.query);
+            console.log(response, '---')
+            const { count, data, currentPage, pageSize } = response;
+            this.tableData = data;
+            this.pageTotal = count;
+            queryCategoryList()
         },
         // 触发搜索按钮
         handleSearch() {
-            this.$set(this.query, 'pageIndex', 1);
+            this.$set(this.query, 'page', 1);
             this.getData();
         },
         // 删除操作
@@ -147,9 +218,12 @@ export default {
             this.$confirm('确定要删除吗？', '提示', {
                 type: 'warning'
             })
-                .then(() => {
+                .then(async() => {
+                    const response = await deleteGoods({id: row.id});
+                    console.log(response)
+                    this.getData();
                     this.$message.success('删除成功');
-                    this.tableData.splice(index, 1);
+                    // this.tableData.splice(index, 1);
                 })
                 .catch(() => {});
         },
@@ -169,6 +243,7 @@ export default {
         },
         // 编辑操作
         handleEdit(index, row) {
+            queryGoodsInfo({id: row.id})
             this.idx = index;
             this.form = row;
             this.editVisible = true;
@@ -181,7 +256,7 @@ export default {
         },
         // 分页导航
         handlePageChange(val) {
-            this.$set(this.query, 'pageIndex', val);
+            this.$set(this.query, 'page', val);
             this.getData();
         }
     }
@@ -216,5 +291,8 @@ export default {
     margin: auto;
     width: 40px;
     height: 40px;
+}
+.el-row {
+    margin: 6px 0;
 }
 </style>
