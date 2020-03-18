@@ -65,3 +65,11 @@ export const deleteGoods = query => {
         data: query
     });
 };
+
+export const updateGoodsSale = query => {
+    return request({
+        url: '/api/admin/goods/sale',
+        method: 'post',
+        data: query
+    });
+};

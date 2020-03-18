@@ -10,6 +10,7 @@ module.exports = {
     productionSourceMap: false,
     lintOnSave: true,
     chainWebpack: (config)=>{
+        config.resolve.symlinks(true);
         config.resolve.alias
             .set('@$', resolve('src'))
             .set('page',resolve('src/page'))
@@ -28,5 +29,5 @@ module.exports = {
                 }
             }
         }
-    }
+    },
 }

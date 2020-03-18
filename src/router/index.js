@@ -35,11 +35,11 @@ export default new Router({
                     component: () => import(/* webpackChunkName: "table" */ '../components/page/GoodsManage/GoodsCategory.vue'),
                     meta: { title: '商品分类' }
                 },
-                {
-                    path: '/goodscomment',
-                    component: () => import(/* webpackChunkName: "table" */ '../components/page/GoodsManage/GoodsComment.vue'),
-                    meta: { title: '商品评价' }
-                },
+                // {
+                //     path: '/goodscomment',
+                //     component: () => import(/* webpackChunkName: "table" */ '../components/page/GoodsManage/GoodsComment.vue'),
+                //     meta: { title: '商品评价' }
+                // },
                 {
                     path: '/tabs',
                     component: () => import(/* webpackChunkName: "tabs" */ '../components/page/Tabs.vue'),

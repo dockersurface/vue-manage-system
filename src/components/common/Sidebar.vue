@@ -74,10 +74,10 @@ export default {
                             index: 'goodscategory',
                             title: '商品分类'
                         },
-                        {
-                            index: 'goodscomment',
-                            title: '商品评价'
-                        },
+                        // {
+                        //     index: 'goodscomment',
+                        //     title: '商品评价'
+                        // },
                     ]
                 },
                 {

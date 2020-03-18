@@ -9,22 +9,41 @@
         </div>
         <div class="container">
             <div class="handle-box">
-                <el-button
-                    type="primary"
-                    icon="el-icon-delete"
-                    class="handle-del mr10"
-                    @click="delAllSelection"
-                >批量删除</el-button>
-                <el-input v-model="query.name" placeholder="商品名称" class="handle-input mr10"></el-input>
-                <el-select v-model="query.address" placeholder="商品分类" class="handle-select mr10">
-                    <el-option key="1" label="广东省" value="广东省"></el-option>
-                    <el-option key="2" label="湖南省" value="湖南省"></el-option>
-                </el-select>
-                <el-select v-model="query.address" placeholder="上架状态" class="handle-select mr10">
-                    <el-option key="1" label="广东省" value="广东省"></el-option>
-                    <el-option key="2" label="湖南省" value="湖南省"></el-option>
-                </el-select>
-                <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
+                <el-row type="flex" class="row-bg" justify="space-between">
+                    <el-col :span="6">
+                        <el-button
+                            type="primary"
+                            icon="el-icon-plus"
+                            class="handle-del mr10"
+                            @click="delAllSelection"
+                        >新增</el-button>
+                    </el-col>
+                    <el-col :span="14" style='text-align: right;'>
+                        <el-input v-model="query.name" placeholder="商品名称" class="handle-input mr10"></el-input>
+                        <!-- <el-select v-model="query.address" placeholder="商品分类" class="handle-select mr10">
+                            <el-option key="1" label="广东省" value="广东省"></el-option>
+                            <el-option key="2" label="湖南省" value="湖南省"></el-option>
+                        </el-select> -->
+                        <el-select v-model="query.category_id" clearable placeholder="商品分类" class="mr10">
+                            <el-option-group
+                            v-for="group in options"
+                            :key="group.label"
+                            :label="group.label">
+                            <el-option
+                                v-for="item in group.options"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value">
+                            </el-option>
+                            </el-option-group>
+                        </el-select>
+                        <el-select v-model="query.is_on_sale" clearable placeholder="上架状态" class="handle-select mr10">
+                            <el-option key="1" label="上架" value=1></el-option>
+                            <el-option key="2" label="下架" value=0></el-option>
+                        </el-select>
+                        <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
+                    </el-col>
+                </el-row>
             </div>
             <el-table
                 :data="tableData"
@@ -34,7 +53,7 @@
                 header-cell-class-name="table-header"
                 @selection-change="handleSelectionChange"
             >
-                <el-table-column type="selection" width="55" align="center"></el-table-column>
+                <el-table-column prop="id" label="商品ID" align="center"></el-table-column>
                 <!-- <el-table-column type="index" label="编号" width="55" align="center"></el-table-column> -->
                 <el-table-column label="商品图片" align="center">
                     <template slot-scope="scope">
@@ -49,39 +68,14 @@
                 <el-table-column label="价格" align="center">
                     <template slot-scope="scope">￥{{scope.row.retail_price}}</template>
                 </el-table-column>
+                <el-table-column prop="category_name" label="商品分类" align="center"></el-table-column>
                 <el-table-column label="标签" width="180" align="center">
                     <template slot-scope="scope">
-                        <el-row>
+                        <el-row type="flex" class="row-bg" justify="center">
                             <el-col :span="8">上架</el-col>
-                            <el-col :span="16">
+                            <el-col :span="8">
                                 <el-switch
                                     v-model="scope.row.is_on_sale"
-                                    active-color="#00A854"
-                                    :active-value=1
-                                    inactive-color=""
-                                    :inactive-value=0
-                                    @change="changeSwitch(scope.row)">
-                                </el-switch>
-                            </el-col>
-                        </el-row>
-                        <el-row>
-                            <el-col :span="8">新品</el-col>
-                            <el-col :span="16">
-                                <el-switch
-                                    v-model="scope.row.is_new"
-                                    active-color="#00A854"
-                                    :active-value=1
-                                    inactive-color=""
-                                    :inactive-value=0
-                                    @change="changeSwitch(scope.row)">
-                                </el-switch>
-                            </el-col>
-                        </el-row>
-                       <el-row>
-                            <el-col :span="8">热销</el-col>
-                            <el-col :span="16">
-                                <el-switch
-                                    v-model="scope.row.is_hot"
                                     active-color="#00A854"
                                     :active-value=1
                                     inactive-color=""
@@ -94,6 +88,7 @@
                 </el-table-column>
                 <el-table-column prop="goods_number" label="库存" align="center"></el-table-column>
                 <el-table-column prop="sell_volume" label="销量" align="center"></el-table-column>
+                <el-table-column prop="sort_order" label="排序" align="center"></el-table-column>
                 <!-- <el-table-column label="状态" align="center">
                     <template slot-scope="scope">
                         <el-tag
@@ -168,14 +163,15 @@
 </template>
 
 <script>
-import { fetchData, queryGoodsList, queryCategoryList, deleteGoods, queryGoodsInfo } from 'api/index';
+import { fetchData, queryGoodsList, queryCategoryList, deleteGoods, queryGoodsInfo, updateGoodsSale } from 'api/index';
 export default {
     name: 'basetable',
     data() {
         return {
             query: {
-                address: '',
+                category_id: '',
                 name: '',
+                is_on_sale: '',
                 page: 1,
                 size: 10
             },
@@ -186,11 +182,14 @@ export default {
             pageTotal: 0,
             form: {},
             idx: -1,
-            id: -1
+            id: -1,
+            options: [],
+            category: []
         };
     },
-    created() {
-        this.getData();
+    async created() {
+        await this.queryCategory();
+        await this.getData();
     },
     methods: {
         // 获取 easy-mock 的模拟数据
@@ -201,14 +200,37 @@ export default {
             //     this.pageTotal = res.pageTotal || 50;
             // });
             const response = await queryGoodsList(this.query);
-            console.log(response, '---')
             const { count, data, currentPage, pageSize } = response;
-            this.tableData = data;
+            const formatData = data.map((item) => ({
+                ...item,
+                category_name: this.category.filter((cate) => cate.id === item.category_id)[0].name
+            }))
+            this.tableData = formatData;
             this.pageTotal = count;
-            queryCategoryList()
+        },
+        async queryCategory() {
+            const data = await queryCategoryList();
+            const topCategory = data.filter((item) => item.parent_id === 0);
+            const category_list = topCategory.map((item) => (
+                {
+                    label: item.name,
+                    options: data.filter((child) => child.parent_id === item.id).map((child) => ({
+                        label: child.name,
+                        value: child.id      
+                    }))
+                }
+            ));
+            this.category = data;
+            this.options = category_list
+        },
+        // 修改是否上架
+        async changeSwitch(row) {
+            const { id, is_on_sale } = row;
+            const response = await updateGoodsSale({id, is_on_sale})
         },
         // 触发搜索按钮
         handleSearch() {
+            console.log(this.query)
             this.$set(this.query, 'page', 1);
             this.getData();
         },
