@@ -66,9 +66,9 @@ export const deleteGoods = query => {
     });
 };
 
-export const updateGoodsSale = query => {
+export const updateGoodsInfo = query => {
     return request({
-        url: '/api/admin/goods/sale',
+        url: '/api/admin/goods/store',
         method: 'post',
         data: query
     });

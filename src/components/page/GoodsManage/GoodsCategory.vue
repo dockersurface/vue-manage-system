@@ -13,7 +13,7 @@
                     type="primary"
                     icon="el-icon-plus"
                     class="handle-del mr10"
-                    @click="delAllSelection"
+                    @click="handleInsert"
                 >新增</el-button>
             </div>
               <el-table
@@ -21,8 +21,7 @@
                 style="width: 100%;margin-bottom: 20px;"
                 row-key="id"
                 border
-                default-expand-all
-                :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+                >
                 <el-table-column
                 prop="id"
                 label="分类ID"
@@ -168,6 +167,11 @@ export default {
             }
             this.$message.error(`删除了${str}`);
             this.multipleSelection = [];
+        },
+        // 新增操作
+        handleInsert() {
+            this.form = {}
+            this.editVisible = true;
         },
         // 编辑操作
         handleEdit(index, row) {

@@ -15,7 +15,7 @@
                             type="primary"
                             icon="el-icon-plus"
                             class="handle-del mr10"
-                            @click="delAllSelection"
+                            @click="handleInsert"
                         >新增</el-button>
                     </el-col>
                     <el-col :span="14" style='text-align: right;'>
@@ -25,17 +25,12 @@
                             <el-option key="2" label="湖南省" value="湖南省"></el-option>
                         </el-select> -->
                         <el-select v-model="query.category_id" clearable placeholder="商品分类" class="mr10">
-                            <el-option-group
-                            v-for="group in options"
-                            :key="group.label"
-                            :label="group.label">
                             <el-option
-                                v-for="item in group.options"
-                                :key="item.value"
-                                :label="item.label"
-                                :value="item.value">
+                            v-for="item in options"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
                             </el-option>
-                            </el-option-group>
                         </el-select>
                         <el-select v-model="query.is_on_sale" clearable placeholder="上架状态" class="handle-select mr10">
                             <el-option key="1" label="上架" value=1></el-option>
@@ -127,13 +122,43 @@
         </div>
 
         <!-- 编辑弹出框 -->
-        <el-dialog title="编辑商品信息" :visible.sync="editVisible" width="30%">
+        <el-dialog title="编辑商品信息" :visible.sync="editVisible" @close='closeDialog'>
             <el-form ref="form" :model="form" label-width="70px">
                 <el-form-item label="商品名称">
                     <el-input v-model="form.name"></el-input>
                 </el-form-item>
+                <el-form-item label="商品简要">
+                    <el-input v-model="form.goods_brief"></el-input>
+                </el-form-item>
+                <el-form-item label="商品主图" style='width: auto;'>
+                    <el-upload
+                    class="avatar-uploader"
+                    action="https://jsonplaceholder.typicode.com/posts/"
+                    :show-file-list="false"
+                    :on-success="handleAvatarSuccess"
+                    :before-upload="beforeAvatarUpload">
+                    <img v-if="form.primary_pic_url" :src="form.primary_pic_url" class="avatar">
+                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                    </el-upload>
+                </el-form-item>
+                <el-form-item label="轮播图片">
+                    <el-upload
+                        action="https://jsonplaceholder.typicode.com/posts/"
+                        list-type="picture-card"
+                        :file-list="fileList"
+                        :on-remove="handleRemove">
+                        <i class="el-icon-plus"></i>
+                    </el-upload>
+                </el-form-item>
                 <el-form-item label="商品分类">
-                    <el-input v-model="form.category_id"></el-input>
+                    <el-select v-model="form.category_id" clearable placeholder="商品分类" class="mr10">
+                        <el-option
+                        v-for="item in options"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value">
+                        </el-option>
+                    </el-select>
                 </el-form-item>
                 <el-form-item label="价格">
                     <el-input v-model="form.retail_price"></el-input>
@@ -144,15 +169,9 @@
                 <el-form-item label="销量">
                     <el-input v-model="form.sell_volume"></el-input>
                 </el-form-item>
-                <el-form-item label="商品参数">
-                    <el-input v-model="form.goods_desc"></el-input>
-                </el-form-item>
-                <el-form-item label="商品图片">
-                    <el-input v-model="form.goods_desc"></el-input>
-                </el-form-item>  
-                <el-form-item label="商品详情">
-                    <el-input v-model="form.goods_desc"></el-input>
-                </el-form-item>              
+                <el-form-item label="商品描述">
+                    <quill-editor ref="myTextEditor" v-model="form.goods_desc" :options="editorOption"></quill-editor>
+                </el-form-item>             
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="editVisible = false">取 消</el-button>
@@ -163,7 +182,11 @@
 </template>
 
 <script>
-import { fetchData, queryGoodsList, queryCategoryList, deleteGoods, queryGoodsInfo, updateGoodsSale } from 'api/index';
+import 'quill/dist/quill.core.css';
+import 'quill/dist/quill.snow.css';
+import 'quill/dist/quill.bubble.css';
+import { quillEditor } from 'vue-quill-editor';
+import { fetchData, queryGoodsList, queryCategoryList, deleteGoods, queryGoodsInfo, updateGoodsInfo } from 'api/index';
 export default {
     name: 'basetable',
     data() {
@@ -184,8 +207,15 @@ export default {
             idx: -1,
             id: -1,
             options: [],
-            category: []
+            category: [],
+            editorOption: {
+                placeholder: '填写商品描述信息'
+            },
+            fileList: []
         };
+    },
+    components: {
+        quillEditor
     },
     async created() {
         await this.queryCategory();
@@ -201,6 +231,7 @@ export default {
             // });
             const response = await queryGoodsList(this.query);
             const { count, data, currentPage, pageSize } = response;
+            console.log(this.category)
             const formatData = data.map((item) => ({
                 ...item,
                 category_name: this.category.filter((cate) => cate.id === item.category_id)[0].name
@@ -214,19 +245,16 @@ export default {
             const category_list = topCategory.map((item) => (
                 {
                     label: item.name,
-                    options: data.filter((child) => child.parent_id === item.id).map((child) => ({
-                        label: child.name,
-                        value: child.id      
-                    }))
+                    value: item.id
                 }
             ));
-            this.category = data;
+            this.category = topCategory;
             this.options = category_list
         },
         // 修改是否上架
         async changeSwitch(row) {
-            const { id, is_on_sale } = row;
-            const response = await updateGoodsSale({id, is_on_sale})
+            // const { id, is_on_sale } = row;
+            const response = await updateGoodsInfo(row);
         },
         // 触发搜索按钮
         handleSearch() {
@@ -263,16 +291,29 @@ export default {
             this.$message.error(`删除了${str}`);
             this.multipleSelection = [];
         },
+        // 新增操作
+        handleInsert() {
+            this.editVisible = true;
+        },
         // 编辑操作
-        handleEdit(index, row) {
-            queryGoodsInfo({id: row.id})
+        async handleEdit(index, row) {
+            const res = await queryGoodsInfo({id: row.id});
+            this.fileList = res.gallery.map((item) => ({
+                url: item.img_url
+            }))
             this.idx = index;
             this.form = row;
             this.editVisible = true;
         },
+        closeDialog() {
+            this.form = {};
+            this.fileList = [];
+        },
         // 保存编辑
         saveEdit() {
+            console.log(this.form)
             this.editVisible = false;
+            return
             this.$message.success(`修改第 ${this.idx + 1} 行成功`);
             this.$set(this.tableData, this.idx, this.form);
         },
@@ -280,7 +321,33 @@ export default {
         handlePageChange(val) {
             this.$set(this.query, 'page', val);
             this.getData();
+        },
+        onEditorChange({ editor, html, text }) {
+            this.content = html;
+            console.log(this.content)
+        },
+        handleRemove(file, fileList) {
+            console.log(file, fileList);
+        },
+        handleAvatarSuccess(res, file) {
+            this.imageUrl = URL.createObjectURL(file.raw);
+        },
+        beforeAvatarUpload(file) {
+            const isJPG = file.type === 'image/jpeg';
+            const isLt2M = file.size / 1024 / 1024 < 2;
+
+            if (!isJPG) {
+            this.$message.error('上传头像图片只能是 JPG 格式!');
+            }
+            if (!isLt2M) {
+            this.$message.error('上传头像图片大小不能超过 2MB!');
+            }
+            return isJPG && isLt2M;
         }
+        // submit(){
+        //     console.log(this.content);
+        //     this.$message.success('提交成功！');
+        // }
     }
 };
 </script>
@@ -316,5 +383,34 @@ export default {
 }
 .el-row {
     margin: 6px 0;
+}
+.avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+.avatar-uploader .el-upload:hover {
+    border-color: #409EFF;
+}
+.avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 146px;
+    height: 146px;
+    line-height: 146px;
+    text-align: center;
+}
+.avatar {
+    width: 146px;
+    height: 146px;
+    display: block;
+}
+</style>
+<style>
+.avatar-uploader .el-upload--text {
+    width: 146px;
+    height: 146px;
 }
 </style>
