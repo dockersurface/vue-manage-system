@@ -18,7 +18,7 @@
                             @click="delAllSelection"
                         >新增</el-button>
                     </el-col>
-                    <el-col :span="14" style='text-align: right;'>
+                    <el-col :span="18" style='text-align: right;'>
                         <el-input v-model="query.name" placeholder="商品名称" class="handle-input mr10"></el-input>
                         <!-- <el-select v-model="query.address" placeholder="商品分类" class="handle-select mr10">
                             <el-option key="1" label="广东省" value="广东省"></el-option>

@@ -18,7 +18,7 @@
                             @click="handleInsert"
                         >新增</el-button>
                     </el-col>
-                    <el-col :span="14" style='text-align: right;'>
+                    <el-col :span="18" style='text-align: right;'>
                         <el-input v-model="query.name" placeholder="商品名称" class="handle-input mr10"></el-input>
                         <!-- <el-select v-model="query.address" placeholder="商品分类" class="handle-select mr10">
                             <el-option key="1" label="广东省" value="广东省"></el-option>
@@ -84,15 +84,6 @@
                 <el-table-column prop="goods_number" label="库存" align="center"></el-table-column>
                 <el-table-column prop="sell_volume" label="销量" align="center"></el-table-column>
                 <el-table-column prop="sort_order" label="排序" align="center"></el-table-column>
-                <!-- <el-table-column label="状态" align="center">
-                    <template slot-scope="scope">
-                        <el-tag
-                            :type="scope.row.state==='成功'?'success':(scope.row.state==='失败'?'danger':'')"
-                        >{{scope.row.state}}</el-tag>
-                    </template>
-                </el-table-column> -->
-
-                <!-- <el-table-column prop="date" label="注册时间"></el-table-column> -->
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-button
@@ -133,9 +124,11 @@
                 <el-form-item label="商品主图" style='width: auto;'>
                     <el-upload
                     class="avatar-uploader"
-                    action="https://jsonplaceholder.typicode.com/posts/"
+                    action="http://127.0.0.1:8360/admin/upload/primaryPic"
                     :show-file-list="false"
-                    :on-success="handleAvatarSuccess"
+                    name="primary_url"
+                    :headers="uploadHeaders"
+                    :on-success="handlePrimarayPicUploadSuccess"
                     :before-upload="beforeAvatarUpload">
                     <img v-if="form.primary_pic_url" :src="form.primary_pic_url" class="avatar">
                     <i v-else class="el-icon-plus avatar-uploader-icon"></i>
@@ -143,9 +136,12 @@
                 </el-form-item>
                 <el-form-item label="轮播图片">
                     <el-upload
-                        action="https://jsonplaceholder.typicode.com/posts/"
+                        action="http://127.0.0.1:8360/admin/upload/galleryPic"
+                        :headers="uploadHeaders"
+                        name="gallery_url"
                         list-type="picture-card"
                         :file-list="fileList"
+                        :on-success="handleGalleryPicUploadSuccess"
                         :on-remove="handleRemove">
                         <i class="el-icon-plus"></i>
                     </el-upload>
@@ -185,8 +181,12 @@
 import 'quill/dist/quill.core.css';
 import 'quill/dist/quill.snow.css';
 import 'quill/dist/quill.bubble.css';
-import { quillEditor } from 'vue-quill-editor';
-import { fetchData, queryGoodsList, queryCategoryList, deleteGoods, queryGoodsInfo, updateGoodsInfo } from 'api/index';
+import {quillEditor, Quill} from 'vue-quill-editor'
+import {container, ImageExtend, QuillWatch} from 'quill-image-extend-module'
+Quill.register('modules/ImageExtend', ImageExtend)
+
+import { fetchData, queryGoodsList, queryCategoryList, deleteGoods, queryGoodsInfo, updateGoodsInfo, deleteGoodsGallery, addGoodsGallery } from 'api/index';
+const token = localStorage.getItem('token')
 export default {
     name: 'basetable',
     data() {
@@ -208,10 +208,35 @@ export default {
             id: -1,
             options: [],
             category: [],
-            editorOption: {
-                placeholder: '填写商品描述信息'
+            fileList: [],
+            uploadHeaders: {
+                ['x-nideshop-token']: token
             },
-            fileList: []
+            editorOption: {
+                placeholder: '填写商品描述信息',
+                modules: {
+                    ImageExtend: {
+                        loading: true,
+                        name: 'goods_desc_pic',
+                        headers: (xhr) => {
+                            xhr.setRequestHeader(['x-nideshop-token'],token)
+                        },
+                        action: 'http://127.0.0.1:8360/admin/upload/goodsDescPic',
+                        response: (res) => {
+                            console.log(res)
+                            return res.data.fileUrl
+                        }
+                    },
+                    toolbar: {
+                        container: container,
+                        handlers: {
+                            'image': function () {
+                                QuillWatch.emit(this.quill.id)
+                            }
+                        }
+                    }
+                }
+            }
         };
     },
     components: {
@@ -240,7 +265,7 @@ export default {
             this.pageTotal = count;
         },
         async queryCategory() {
-            const data = await queryCategoryList();
+            const { data } = await queryCategoryList();
             const topCategory = data.filter((item) => item.parent_id === 0);
             const category_list = topCategory.map((item) => (
                 {
@@ -299,6 +324,7 @@ export default {
         async handleEdit(index, row) {
             const res = await queryGoodsInfo({id: row.id});
             this.fileList = res.gallery.map((item) => ({
+                ...item,
                 url: item.img_url
             }))
             this.idx = index;
@@ -310,10 +336,10 @@ export default {
             this.fileList = [];
         },
         // 保存编辑
-        saveEdit() {
+        async saveEdit() {
             console.log(this.form)
+            await updateGoodsInfo(this.form)
             this.editVisible = false;
-            return
             this.$message.success(`修改第 ${this.idx + 1} 行成功`);
             this.$set(this.tableData, this.idx, this.form);
         },
@@ -326,11 +352,22 @@ export default {
             this.content = html;
             console.log(this.content)
         },
-        handleRemove(file, fileList) {
-            console.log(file, fileList);
+        async handleRemove(file, fileList) {
+            const { id } = file;
+            const res = await deleteGoodsGallery({id}) 
+            console.log(file, fileList, 'remove');
         },
-        handleAvatarSuccess(res, file) {
-            this.imageUrl = URL.createObjectURL(file.raw);
+        handlePrimarayPicUploadSuccess(res, file, fileList) {
+            const { data: { fileUrl } } = res;
+            this.form.primary_pic_url = fileUrl
+            // this.form.primary_pic_url = URL.createObjectURL(file.raw);
+        },
+        async handleGalleryPicUploadSuccess(res, file, fileList) {
+            const { id } = this.form;
+            // console.log(res, file, fileList, '12211221')
+            const { data: { fileUrl } } = res;
+            await addGoodsGallery({goods_id: id, gallery_url: fileUrl})
+            // this.form.primary_pic_url = URL.createObjectURL(file.raw);
         },
         beforeAvatarUpload(file) {
             const isJPG = file.type === 'image/jpeg';
@@ -344,10 +381,6 @@ export default {
             }
             return isJPG && isLt2M;
         }
-        // submit(){
-        //     console.log(this.content);
-        //     this.$message.success('提交成功！');
-        // }
     }
 };
 </script>

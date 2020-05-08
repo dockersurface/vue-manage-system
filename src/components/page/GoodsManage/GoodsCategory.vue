@@ -64,9 +64,9 @@
             <div class="pagination">
                 <el-pagination
                     background
-                    layout="total, prev, pager, next"
-                    :current-page="query.pageIndex"
-                    :page-size="query.pageSize"
+                     layout="total, prev, pager, next"
+                    :current-page="query.page"
+                    :page-size="query.size"
                     :total="pageTotal"
                     @current-change="handlePageChange"
                 ></el-pagination>
@@ -74,13 +74,30 @@
         </div>
 
         <!-- 编辑弹出框 -->
-        <el-dialog title="编辑" :visible.sync="editVisible" width="30%">
+        <el-dialog title="编辑" :visible.sync="editVisible" width="70%">
             <el-form ref="form" :model="form" label-width="70px">
-                <el-form-item label="用户名">
+                <el-form-item label="分类名称">
                     <el-input v-model="form.name"></el-input>
                 </el-form-item>
-                <el-form-item label="地址">
-                    <el-input v-model="form.address"></el-input>
+                <el-form-item label="分类描述">
+                    <el-input v-model="form.front_desc"></el-input>
+                </el-form-item>
+                <el-form-item label="分类图片" style='width: auto;'>
+                    <el-upload
+                    class="avatar-uploader"
+                    action="http://127.0.0.1:8360/admin/upload/categoryWapBannerPic"
+                    :show-file-list="false"
+                    name="wap_banner_url"
+                    :headers="uploadHeaders"
+                    :on-success="handleCategoryPicUploadSuccess"
+                    :before-upload="beforeAvatarUpload">
+                    <img v-if="form.wap_banner_url" :src="form.wap_banner_url" class="avatar">
+                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                    </el-upload>
+                    <div>建议图片尺寸为360*180</div>
+                </el-form-item>
+                <el-form-item label="分类排序">
+                    <el-input v-model="form.sort_order"></el-input>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
@@ -92,7 +109,8 @@
 </template>
 
 <script>
-import { fetchData, queryCategoryList } from '../../../api/index';
+import { fetchData, queryCategoryList, deleteCategory, storeCategory } from '../../../api/index';
+const token = localStorage.getItem('token')
 export default {
     name: 'basetable',
     data() {
@@ -110,7 +128,10 @@ export default {
             pageTotal: 0,
             form: {},
             idx: -1,
-            id: -1
+            id: -1,
+            uploadHeaders: {
+                ['x-nideshop-token']: token
+            },
         };
     },
     created() {
@@ -124,7 +145,7 @@ export default {
             //     this.tableData = res.list;
             //     this.pageTotal = res.pageTotal || 50;
             // });
-            const data = await queryCategoryList();
+            const {data, count} = await queryCategoryList();
             const topCategory = data.filter((item) => {
                 return item.parent_id === 0;
             });
@@ -135,6 +156,7 @@ export default {
                     children: data.filter((child) => child.parent_id === item.id)
                 }
             ));
+            this.pageTotal = count;
             this.tableData = category_list;
         },
         // 触发搜索按钮
@@ -148,9 +170,10 @@ export default {
             this.$confirm('确定要删除吗？', '提示', {
                 type: 'warning'
             })
-                .then(() => {
+                .then(async () => {
                     this.$message.success('删除成功');
                     this.tableData.splice(index, 1);
+                    await deleteCategory({id: row.id})
                 })
                 .catch(() => {});
         },
@@ -168,6 +191,10 @@ export default {
             this.$message.error(`删除了${str}`);
             this.multipleSelection = [];
         },
+        handleCategoryPicUploadSuccess(res, file, fileList) {
+            const { data: { fileUrl } } = res;
+            this.form.wap_banner_url = fileUrl
+        },
         // 新增操作
         handleInsert() {
             this.form = {}
@@ -180,10 +207,24 @@ export default {
             this.editVisible = true;
         },
         // 保存编辑
-        saveEdit() {
+        async saveEdit() {
+            await storeCategory(this.form)
+
             this.editVisible = false;
-            this.$message.success(`修改第 ${this.idx + 1} 行成功`);
+            // this.$message.success(`修改第 ${this.idx + 1} 行成功`);
             this.$set(this.tableData, this.idx, this.form);
+        },
+        beforeAvatarUpload(file) {
+            const isJPG = file.type === 'image/jpeg';
+            const isLt2M = file.size / 1024 / 1024 < 2;
+
+            if (!isJPG) {
+            this.$message.error('上传头像图片只能是 JPG 格式!');
+            }
+            if (!isLt2M) {
+            this.$message.error('上传头像图片大小不能超过 2MB!');
+            }
+            return isJPG && isLt2M;
         },
         // 分页导航
         handlePageChange(val) {

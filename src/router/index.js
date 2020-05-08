@@ -35,6 +35,11 @@ export default new Router({
                     component: () => import(/* webpackChunkName: "table" */ '../components/page/GoodsManage/GoodsCategory.vue'),
                     meta: { title: '商品分类' }
                 },
+                {
+                    path: '/orderlist',
+                    component: () => import(/* webpackChunkName: "table" */ '../components/page/OrderManage/OrderList.vue'),
+                    meta: { title: '订单列表' }
+                },
                 // {
                 //     path: '/goodscomment',
                 //     component: () => import(/* webpackChunkName: "table" */ '../components/page/GoodsManage/GoodsComment.vue'),
