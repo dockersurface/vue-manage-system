@@ -37,13 +37,17 @@
                 header-cell-class-name="table-header"
                 @selection-change="handleSelectionChange"
             >
-                  <el-table-column prop="id" label="ID" width="100">
-                  </el-table-column>
+                  <!-- <el-table-column prop="id" label="ID" width="100">
+                  </el-table-column> -->
                   <el-table-column prop="order_sn" label="订单号">
                   </el-table-column>
-                  <el-table-column prop="add_time" label="下单时间">
-                  </el-table-column>
                   <el-table-column prop="consignee" label="收货人">
+                  </el-table-column>
+                  <el-table-column prop="mobile" label="手机号码">
+                  </el-table-column>
+                  <el-table-column prop="full_region" label="地址">
+                  </el-table-column>
+                  <el-table-column prop="add_time" label="下单时间">
                   </el-table-column>
                   <el-table-column prop="actual_price" label="订单金额">
                   </el-table-column>
@@ -147,6 +151,7 @@ import 'quill/dist/quill.core.css';
 import 'quill/dist/quill.snow.css';
 import 'quill/dist/quill.bubble.css';
 import {quillEditor, Quill} from 'vue-quill-editor'
+import moment from 'moment'
 import {container, ImageExtend, QuillWatch} from 'quill-image-extend-module'
 Quill.register('modules/ImageExtend', ImageExtend)
 
@@ -219,7 +224,7 @@ export default {
             // });
             const response = await queryOrderList(this.query);
             const { count, data, currentPage, pageSize } = response;
-            this.tableData = data;
+            this.tableData = data.map((d) => ({...d, add_time: moment(d.add_time*1000).format('YYYY-MM-DD HH:mm:ss')}))
             this.pageTotal = count;
         },
         // 触发搜索按钮
@@ -302,16 +307,16 @@ export default {
             // this.form.primary_pic_url = URL.createObjectURL(file.raw);
         },
         beforeAvatarUpload(file) {
-            const isJPG = file.type === 'image/jpeg';
-            const isLt2M = file.size / 1024 / 1024 < 2;
+            // const isJPG = file.type === 'image/jpeg';
+            // const isLt2M = file.size / 1024 / 1024 < 2;
 
-            if (!isJPG) {
-            this.$message.error('上传头像图片只能是 JPG 格式!');
-            }
-            if (!isLt2M) {
-            this.$message.error('上传头像图片大小不能超过 2MB!');
-            }
-            return isJPG && isLt2M;
+            // if (!isJPG) {
+            // this.$message.error('上传头像图片只能是 JPG 格式!');
+            // }
+            // if (!isLt2M) {
+            // this.$message.error('上传头像图片大小不能超过 2MB!');
+            // }
+            // return isJPG && isLt2M;
         }
     }
 };

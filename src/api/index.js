@@ -19,7 +19,7 @@ export const fetchData = query => {
 
 export const login = query => {
     return request({
-        url: '/api/admin/auth/login',
+        url: '/admin/auth/login',
         method: 'post',
         data: query
     });
@@ -35,7 +35,7 @@ export const login = query => {
 
 export const queryGoodsList = query => {
     return request({
-        url: '/api/admin/goods',
+        url: '/admin/goods',
         method: 'get',
         params: query
     });
@@ -43,7 +43,7 @@ export const queryGoodsList = query => {
 
 export const queryGoodsInfo = query => {
     return request({
-        url: '/api/admin/goods/info',
+        url: '/admin/goods/info',
         method: 'get',
         params: query
     });
@@ -51,7 +51,7 @@ export const queryGoodsInfo = query => {
 
 export const deleteGoods = query => {
     return request({
-        url: '/api/admin/goods/destory',
+        url: '/admin/goods/destory',
         method: 'post',
         data: query
     });
@@ -59,7 +59,7 @@ export const deleteGoods = query => {
 
 export const updateGoodsInfo = query => {
     return request({
-        url: '/api/admin/goods/store',
+        url: '/admin/goods/store',
         method: 'post',
         data: query
     });
@@ -67,7 +67,7 @@ export const updateGoodsInfo = query => {
 
 export const deleteGoodsGallery = query => {
     return request({
-        url: '/api/admin/goods/deleteGoodsGallery',
+        url: '/admin/goods/deleteGoodsGallery',
         method: 'post',
         data: query
     });
@@ -75,7 +75,7 @@ export const deleteGoodsGallery = query => {
 
 export const addGoodsGallery = query => {
     return request({
-        url: '/api/admin/goods/addGoodsGallery',
+        url: '/admin/goods/addGoodsGallery',
         method: 'post',
         data: query
     });
@@ -83,7 +83,7 @@ export const addGoodsGallery = query => {
 
 export const queryCategoryList = query => {
     return request({
-        url: '/api/admin/category',
+        url: '/admin/category',
         method: 'get',
         params: query
     });
@@ -91,7 +91,7 @@ export const queryCategoryList = query => {
 
 export const deleteCategory = query => {
     return request({
-        url: '/api/admin/category/destory',
+        url: '/admin/category/destory',
         method: 'post',
         data: query
     });
@@ -99,7 +99,7 @@ export const deleteCategory = query => {
 
 export const storeCategory = query => {
     return request({
-        url: '/api/admin/category/store',
+        url: '/admin/category/store',
         method: 'post',
         data: query
     });
@@ -108,7 +108,7 @@ export const storeCategory = query => {
 // 订单列表增删改查
 export const queryOrderList = query => {
     return request({
-        url: '/api/admin/order',
+        url: '/admin/order',
         method: 'get',
         params: query
     });
@@ -117,7 +117,7 @@ export const queryOrderList = query => {
 
 export const queryOrderInfo = query => {
     return request({
-        url: '/api/admin/order/info',
+        url: '/admin/order/info',
         method: 'get',
         params: query
     });
@@ -125,7 +125,7 @@ export const queryOrderInfo = query => {
 
 export const deleteOrder = query => {
     return request({
-        url: '/api/admin/order/destory',
+        url: '/admin/order/destory',
         method: 'post',
         data: query
     });
@@ -133,7 +133,7 @@ export const deleteOrder = query => {
 
 export const updateOrderInfo = query => {
     return request({
-        url: '/api/admin/order/store',
+        url: '/admin/order/store',
         method: 'post',
         data: query
     });

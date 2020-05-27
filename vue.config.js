@@ -21,11 +21,11 @@ module.exports = {
     },
     devServer: {
         proxy: {
-            '/api':{
-                target:'http://127.0.0.1:8360',
+            '/admin':{
+                target:'http://127.0.0.1:8360/admin',
                 changeOrigin:true,
                 pathRewrite:{
-                    '/api':''
+                    '/admin':''
                 }
             }
         }

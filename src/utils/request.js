@@ -3,17 +3,18 @@ import { Message } from 'element-ui';//引入elm组件
 import { removeUserInfo } from './utils';
 
 const service = axios.create({
-    // process.env.NODE_ENV === 'development' 来判断是否开发环境
+    //  来判断是否开发环境
     // easy-mock服务挂了，暂时不使用了
-    // baseURL: 'https://www.easy-mock.com/mock/592501a391470c0ac1fab128',
+    baseURL: process.env.NODE_ENV === 'development' ? '' : 'https://www.lunaflower.club',
+    // baseURL: process.env.NODE_ENV === 'development' ? 'https://www.lunaflower.club' : '',
     timeout: 5000
 });
-
 
 let loadingInstance;//定时器
 
 service.interceptors.request.use(
     config => {
+        console.log(process.env.NODE_ENV, 'process.env.NODE_ENV')
         // 下面会说在什么时候存储 token
         const token = localStorage.getItem('token');
         if (token) {

@@ -78,26 +78,29 @@
             <el-form ref="form" :model="form" label-width="70px">
                 <el-form-item label="分类名称">
                     <el-input v-model="form.name"></el-input>
+                    <div>建议四个字以内</div>
                 </el-form-item>
                 <el-form-item label="分类描述">
                     <el-input v-model="form.front_desc"></el-input>
+                    <div>分类图片上面的描述文字</div>
                 </el-form-item>
                 <el-form-item label="分类图片" style='width: auto;'>
                     <el-upload
-                    class="avatar-uploader"
-                    action="http://127.0.0.1:8360/admin/upload/categoryWapBannerPic"
+                    class="category-uploader"
+                    :action="uploadUrl"
                     :show-file-list="false"
                     name="wap_banner_url"
                     :headers="uploadHeaders"
                     :on-success="handleCategoryPicUploadSuccess"
                     :before-upload="beforeAvatarUpload">
-                    <img v-if="form.wap_banner_url" :src="form.wap_banner_url" class="avatar">
+                    <img v-if="form.wap_banner_url" :src="form.wap_banner_url" class="category-img">
                     <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                     </el-upload>
-                    <div>建议图片尺寸为360*180</div>
+                    <div>建议260*96横屏，分类图片</div>
                 </el-form-item>
                 <el-form-item label="分类排序">
                     <el-input v-model="form.sort_order"></el-input>
+                    <div>建议输入10、20、30、40方便后续排序</div>
                 </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
@@ -110,6 +113,7 @@
 
 <script>
 import { fetchData, queryCategoryList, deleteCategory, storeCategory } from '../../../api/index';
+import { imgHost } from '../../../utils/utils';
 const token = localStorage.getItem('token')
 export default {
     name: 'basetable',
@@ -132,6 +136,7 @@ export default {
             uploadHeaders: {
                 ['x-nideshop-token']: token
             },
+            uploadUrl: imgHost + "/admin/upload/categoryWapBannerPic"
         };
     },
     created() {
@@ -215,16 +220,16 @@ export default {
             this.$set(this.tableData, this.idx, this.form);
         },
         beforeAvatarUpload(file) {
-            const isJPG = file.type === 'image/jpeg';
-            const isLt2M = file.size / 1024 / 1024 < 2;
+            // const isJPG = file.type === 'image/jpeg';
+            // const isLt2M = file.size / 1024 / 1024 < 2;
 
-            if (!isJPG) {
-            this.$message.error('上传头像图片只能是 JPG 格式!');
-            }
-            if (!isLt2M) {
-            this.$message.error('上传头像图片大小不能超过 2MB!');
-            }
-            return isJPG && isLt2M;
+            // if (!isJPG) {
+            // this.$message.error('上传头像图片只能是 JPG 格式!');
+            // }
+            // if (!isLt2M) {
+            // this.$message.error('上传头像图片大小不能超过 2MB!');
+            // }
+            // return isJPG && isLt2M;
         },
         // 分页导航
         handlePageChange(val) {
@@ -234,6 +239,12 @@ export default {
     }
 };
 </script>
+<style>
+.category-uploader .el-upload--text {
+    width: 260px;
+    height: 96px;
+}
+</style>
 
 <style scoped>
 .handle-box {
@@ -263,5 +274,13 @@ export default {
     margin: auto;
     width: 40px;
     height: 40px;
+}
+.category-uploader {
+    width: 260px;
+    height: 96px;
+}
+.category-img {
+    width: 260px;
+    height: 96px;
 }
 </style>

@@ -79,6 +79,32 @@
                                 </el-switch>
                             </el-col>
                         </el-row>
+                        <el-row type="flex" class="row-bg" justify="center">
+                            <el-col :span="8">人气</el-col>
+                            <el-col :span="8">
+                                <el-switch
+                                    v-model="scope.row.is_hot"
+                                    active-color="#00A854"
+                                    :active-value=1
+                                    inactive-color=""
+                                    :inactive-value=0
+                                    @change="changeSwitch(scope.row)">
+                                </el-switch>
+                            </el-col>
+                        </el-row>
+                        <el-row type="flex" class="row-bg" justify="center">
+                            <el-col :span="8">新品</el-col>
+                            <el-col :span="8">
+                                <el-switch
+                                    v-model="scope.row.is_new"
+                                    active-color="#00A854"
+                                    :active-value=1
+                                    inactive-color=""
+                                    :inactive-value=0
+                                    @change="changeSwitch(scope.row)">
+                                </el-switch>
+                            </el-col>
+                        </el-row>
                     </template>
                 </el-table-column>
                 <el-table-column prop="goods_number" label="库存" align="center"></el-table-column>
@@ -124,7 +150,7 @@
                 <el-form-item label="商品主图" style='width: auto;'>
                     <el-upload
                     class="avatar-uploader"
-                    action="http://127.0.0.1:8360/admin/upload/primaryPic"
+                    :action=uploadPrimaryUrl
                     :show-file-list="false"
                     name="primary_url"
                     :headers="uploadHeaders"
@@ -134,9 +160,9 @@
                     <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                     </el-upload>
                 </el-form-item>
-                <el-form-item label="轮播图片">
+                <el-form-item label="商品图片">
                     <el-upload
-                        action="http://127.0.0.1:8360/admin/upload/galleryPic"
+                        :action=uploadGalleryPic
                         :headers="uploadHeaders"
                         name="gallery_url"
                         list-type="picture-card"
@@ -186,6 +212,7 @@ import {container, ImageExtend, QuillWatch} from 'quill-image-extend-module'
 Quill.register('modules/ImageExtend', ImageExtend)
 
 import { fetchData, queryGoodsList, queryCategoryList, deleteGoods, queryGoodsInfo, updateGoodsInfo, deleteGoodsGallery, addGoodsGallery } from 'api/index';
+import { imgHost } from '../../../utils/utils';
 const token = localStorage.getItem('token')
 export default {
     name: 'basetable',
@@ -236,7 +263,9 @@ export default {
                         }
                     }
                 }
-            }
+            },
+            uploadPrimaryUrl: imgHost + "/admin/upload/primaryPic",
+            uploadGalleryPic: imgHost + "/admin/upload/galleryPic"
         };
     },
     components: {
@@ -256,7 +285,7 @@ export default {
             // });
             const response = await queryGoodsList(this.query);
             const { count, data, currentPage, pageSize } = response;
-            console.log(this.category)
+            // console.log(this.category)
             const formatData = data.map((item) => ({
                 ...item,
                 category_name: this.category.filter((cate) => cate.id === item.category_id)[0].name
@@ -370,16 +399,16 @@ export default {
             // this.form.primary_pic_url = URL.createObjectURL(file.raw);
         },
         beforeAvatarUpload(file) {
-            const isJPG = file.type === 'image/jpeg';
-            const isLt2M = file.size / 1024 / 1024 < 2;
+            // const isJPG = file.type === 'image/jpeg';
+            // const isLt2M = file.size / 1024 / 1024 < 2;
 
-            if (!isJPG) {
-            this.$message.error('上传头像图片只能是 JPG 格式!');
-            }
-            if (!isLt2M) {
-            this.$message.error('上传头像图片大小不能超过 2MB!');
-            }
-            return isJPG && isLt2M;
+            // if (!isJPG) {
+            // this.$message.error('上传头像图片只能是 JPG 格式!');
+            // }
+            // if (!isLt2M) {
+            // this.$message.error('上传头像图片大小不能超过 2MB!');
+            // }
+            // return isJPG && isLt2M;
         }
     }
 };
