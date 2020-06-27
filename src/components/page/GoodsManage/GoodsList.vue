@@ -160,7 +160,7 @@
                     <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                     </el-upload>
                 </el-form-item>
-                <el-form-item label="商品图片">
+                <!-- <el-form-item label="商品图片">
                     <el-upload
                         :action=uploadGalleryPic
                         :headers="uploadHeaders"
@@ -171,7 +171,7 @@
                         :on-remove="handleRemove">
                         <i class="el-icon-plus"></i>
                     </el-upload>
-                </el-form-item>
+                </el-form-item> -->
                 <el-form-item label="商品分类">
                     <el-select v-model="form.category_id" clearable placeholder="商品分类" class="mr10">
                         <el-option
@@ -248,7 +248,7 @@ export default {
                         headers: (xhr) => {
                             xhr.setRequestHeader(['x-nideshop-token'],token)
                         },
-                        action: 'http://127.0.0.1:8360/admin/upload/goodsDescPic',
+                        action: imgHost + '/admin/upload/goodsDescPic',
                         response: (res) => {
                             console.log(res)
                             return res.data.fileUrl
@@ -371,6 +371,7 @@ export default {
             this.editVisible = false;
             this.$message.success(`修改第 ${this.idx + 1} 行成功`);
             this.$set(this.tableData, this.idx, this.form);
+            this.getData();
         },
         // 分页导航
         handlePageChange(val) {

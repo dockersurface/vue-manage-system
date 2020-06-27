@@ -39,8 +39,8 @@
             >
                   <!-- <el-table-column prop="id" label="ID" width="100">
                   </el-table-column> -->
-                  <el-table-column prop="order_sn" label="订单号">
-                  </el-table-column>
+                  <!-- <el-table-column prop="order_sn" label="订单号">
+                  </el-table-column> -->
                   <el-table-column prop="consignee" label="收货人">
                   </el-table-column>
                   <el-table-column prop="mobile" label="手机号码">
@@ -51,21 +51,32 @@
                   </el-table-column>
                   <el-table-column prop="actual_price" label="订单金额">
                   </el-table-column>
+                <el-table-column prop="freight_price" label="运费">
+                  </el-table-column>
                   <el-table-column prop="order_status_text" label="订单状态">
                   </el-table-column>
+                    <el-table-column label="商品清单" align="center">
+                        <template slot-scope="scope">
+                            <el-popover
+                            placement="right"
+                            width="400"
+                            trigger="hover">
+                            <el-table :data="scope.row.goodsList">
+                                <el-table-column width="150" property="goods_name" label="商品名称"></el-table-column>
+                                <el-table-column width="100" property="retail_price" label="价格"></el-table-column>
+                                <el-table-column width="300" property="number" label="数量"></el-table-column>
+                            </el-table>
+                            <el-button slot="reference">详情</el-button>
+                            </el-popover>
+                        </template>
+                    </el-table-column>
                 <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-button
                             type="text"
-                            icon="el-icon-edit"
-                            @click="handleEdit(scope.$index, scope.row)"
-                        >编辑</el-button>
-                        <el-button
-                            type="text"
-                            icon="el-icon-delete"
                             class="red"
                             @click="handleDelete(scope.$index, scope.row)"
-                        >删除</el-button>
+                        >发货</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -154,6 +165,7 @@ import {quillEditor, Quill} from 'vue-quill-editor'
 import moment from 'moment'
 import {container, ImageExtend, QuillWatch} from 'quill-image-extend-module'
 Quill.register('modules/ImageExtend', ImageExtend)
+import { imgHost } from '../../../utils/utils';
 
 import { fetchData, queryOrderList, queryCategoryList, deleteOrder, queryGoodsInfo, updateGoodsInfo, deleteGoodsGallery, addGoodsGallery } from 'api/index';
 const token = localStorage.getItem('token')
@@ -190,7 +202,7 @@ export default {
                         headers: (xhr) => {
                             xhr.setRequestHeader(['x-nideshop-token'],token)
                         },
-                        action: 'http://127.0.0.1:8360/admin/upload/goodsDescPic',
+                        action: imgHost + '/admin/upload/goodsDescPic',
                         response: (res) => {
                             console.log(res)
                             return res.data.fileUrl
@@ -283,6 +295,7 @@ export default {
             this.editVisible = false;
             this.$message.success(`修改第 ${this.idx + 1} 行成功`);
             this.$set(this.tableData, this.idx, this.form);
+            this.getData();
         },
         // 分页导航
         handlePageChange(val) {

@@ -138,3 +138,35 @@ export const updateOrderInfo = query => {
         data: query
     });
 };
+
+export const queryAdsList = query => {
+    return request({
+        url: '/admin/ads',
+        method: 'get',
+        params: query
+    });
+};
+
+export const queryAdsInfo = query => {
+    return request({
+        url: '/admin/ads/info',
+        method: 'get',
+        params: query
+    });
+};
+
+export const deleteAds = query => {
+    return request({
+        url: '/admin/ads/destory',
+        method: 'post',
+        data: query
+    });
+};
+
+export const updateAdsInfo = query => {
+    return request({
+        url: '/admin/ads/store',
+        method: 'post',
+        data: query
+    });
+};

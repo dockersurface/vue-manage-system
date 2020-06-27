@@ -218,6 +218,7 @@ export default {
             this.editVisible = false;
             // this.$message.success(`修改第 ${this.idx + 1} 行成功`);
             this.$set(this.tableData, this.idx, this.form);
+            this.getData();
         },
         beforeAvatarUpload(file) {
             // const isJPG = file.type === 'image/jpeg';
