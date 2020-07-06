@@ -1,12 +1,5 @@
 <template>
     <div>
-        <div class="crumbs">
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item>
-                    <i class="el-icon-lx-cascades"></i> 基础表格
-                </el-breadcrumb-item>
-            </el-breadcrumb>
-        </div>
         <div class="container">
             <div class="handle-box">
                 <el-row type="flex" class="row-bg" justify="space-between">
@@ -55,6 +48,8 @@
                   </el-table-column>
                   <el-table-column prop="order_status_text" label="订单状态">
                   </el-table-column>
+                <el-table-column prop="postscript" label="留言">
+                  </el-table-column>
                     <el-table-column label="商品清单" align="center">
                         <template slot-scope="scope">
                             <el-popover
@@ -70,7 +65,7 @@
                             </el-popover>
                         </template>
                     </el-table-column>
-                <el-table-column label="操作" width="180" align="center">
+                <!-- <el-table-column label="操作" width="180" align="center">
                     <template slot-scope="scope">
                         <el-button
                             type="text"
@@ -78,7 +73,7 @@
                             @click="handleDelete(scope.$index, scope.row)"
                         >发货</el-button>
                     </template>
-                </el-table-column>
+                </el-table-column> -->
             </el-table>
             <div class="pagination">
                 <el-pagination

@@ -1,12 +1,5 @@
 <template>
     <div>
-        <div class="crumbs">
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item>
-                    <i class="el-icon-lx-cascades"></i> 基础表格
-                </el-breadcrumb-item>
-            </el-breadcrumb>
-        </div>
         <div class="container">
             <div class="handle-box">
                 <el-row type="flex" class="row-bg" justify="space-between">
@@ -288,14 +281,20 @@ export default {
             // console.log(this.category)
             const formatData = data.map((item) => ({
                 ...item,
-                category_name: this.category.filter((cate) => cate.id === item.category_id)[0].name
+                category_name: this.category.filter((cate) => cate.id === item.category_id) && this.category.filter((cate) => cate.id === item.category_id)[0].name
             }))
             this.tableData = formatData;
             this.pageTotal = count;
         },
         async queryCategory() {
-            const { data } = await queryCategoryList();
-            const topCategory = data.filter((item) => item.parent_id === 0);
+            const data = await queryCategoryList();
+            const topCategory = []
+            data.forEach((item) => {
+                if(item.children.length !== 0) {
+                    topCategory.push(...item.children)
+                }
+            });
+            // console.log(topCategory)
             const category_list = topCategory.map((item) => (
                 {
                     label: item.name,

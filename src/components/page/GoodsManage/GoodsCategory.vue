@@ -1,12 +1,5 @@
 <template>
     <div>
-        <div class="crumbs">
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item>
-                    <i class="el-icon-lx-cascades"></i> 基础表格
-                </el-breadcrumb-item>
-            </el-breadcrumb>
-        </div>
         <div class="container">
             <div class="handle-box">
                 <el-button
@@ -21,6 +14,8 @@
                 style="width: 100%;margin-bottom: 20px;"
                 row-key="id"
                 border
+                default-expand-all
+                :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
                 >
                 <el-table-column
                 prop="id"
@@ -76,6 +71,12 @@
         <!-- 编辑弹出框 -->
         <el-dialog title="编辑" :visible.sync="editVisible" width="70%">
             <el-form ref="form" :model="form" label-width="70px">
+                <el-form-item label="上级分类" prop="name">
+                    <el-select clearable v-model="form.parent_id" placeholder="请选择上级分类">
+                        <el-option v-for="item in tableData" :key="item.id" :label="item.name" :value="item.id"></el-option>
+                    </el-select>
+                    <div>如果添加一级分类不用选择</div>
+                </el-form-item>
                 <el-form-item label="分类名称">
                     <el-input v-model="form.name"></el-input>
                     <div>建议四个字以内</div>
@@ -96,7 +97,7 @@
                     <img v-if="form.wap_banner_url" :src="form.wap_banner_url" class="category-img">
                     <i v-else class="el-icon-plus avatar-uploader-icon"></i>
                     </el-upload>
-                    <div>建议260*96横屏，分类图片</div>
+                    <div class="form-tip">图片尺寸：顶级分类为750*246，二级分类为250*250</div>
                 </el-form-item>
                 <el-form-item label="分类排序">
                     <el-input v-model="form.sort_order"></el-input>
@@ -122,8 +123,8 @@ export default {
             query: {
                 address: '',
                 name: '',
-                pageIndex: 1,
-                pageSize: 10
+                page: 1,
+                size: 10
             },
             tableData: [],
             multipleSelection: [],
@@ -150,19 +151,10 @@ export default {
             //     this.tableData = res.list;
             //     this.pageTotal = res.pageTotal || 50;
             // });
-            const {data, count} = await queryCategoryList();
-            const topCategory = data.filter((item) => {
-                return item.parent_id === 0;
-            });
-            const category_list = topCategory.map((item) => (
-                {
-                    ...item,
-                    level: 1,
-                    children: data.filter((child) => child.parent_id === item.id)
-                }
-            ));
-            this.pageTotal = count;
-            this.tableData = category_list;
+            const data = await queryCategoryList(this.query);
+            console.log(data)
+            // this.pageTotal = count;
+            this.tableData = data;
         },
         // 触发搜索按钮
         handleSearch() {
@@ -234,7 +226,7 @@ export default {
         },
         // 分页导航
         handlePageChange(val) {
-            this.$set(this.query, 'pageIndex', val);
+            this.$set(this.query, 'page', val);
             this.getData();
         }
     }

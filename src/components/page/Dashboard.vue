@@ -1,12 +1,5 @@
 <template>
     <div>
-        <div class="crumbs">
-            <el-breadcrumb separator="/">
-                <el-breadcrumb-item>
-                    <i class="el-icon-lx-cascades"></i> 基础表格
-                </el-breadcrumb-item>
-            </el-breadcrumb>
-        </div>
         <div class="container">
             <div class="handle-box">
                 <el-row type="flex" class="row-bg" justify="space-between">
@@ -48,7 +41,7 @@
                 header-cell-class-name="table-header"
                 @selection-change="handleSelectionChange"
             >
-                <el-table-column prop="id" label="商品ID" align="center"></el-table-column>
+                <!-- <el-table-column prop="id" label="商品ID" align="center"></el-table-column> -->
                 <!-- <el-table-column type="index" label="编号" width="55" align="center"></el-table-column> -->
                 <el-table-column label="商品图片" align="center">
                     <template slot-scope="scope">
